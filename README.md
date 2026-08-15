@@ -2,5 +2,5 @@
 
 This repo is a collection of notes regarding the installation of Harvester on SNUC hardware.
 
-[8700](./SNUC_8700.md)
+[SNUC EE-8700](./SNUC_EE-8700.md)
 
