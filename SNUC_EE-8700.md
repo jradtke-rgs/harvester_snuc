@@ -1,16 +1,17 @@
 # SNUC_8700
 
 Update BIOS
-Set date/time
+Set date/time at BIOS
+Boot to USB and modify grub entry ("console=ttyS0,115200n8 nomodest)
 
 # Console Settings
 - BIOS
 - grub.cfg
 
-# Boot Media
+# Installation Choice
 - Virtual Media vs USB Drive
+- PXE (future)
 
-# PXE (future)
 
 | Harvester Release | Works | Notes |
 |:------------------|:-----:|:------|
@@ -21,3 +22,13 @@ Set date/time
 # known issues:
 - Installer can't proceed past network
 - No display on console
+
+
+# References
+https://docs.harvesterhci.io/v1.8/troubleshooting/os/#how-to-change-the-default-grub-boot-menu-entry  
+https://docs.harvesterhci.io/v1.8/install/usb-install  
+https://docs.harvesterhci.io/v1.8/install/usb-install#graphics-issue explains how to update grub at install time for headless systems  
+
+## nomodeset - grub option
+https://en.opensuse.org/SDB:Nomodeset:_Work_Around_Graphic_Upgrade_%26_Installation_Obstacles - nomodeset option  
+https://documentation.suse.com/smart/systems-management/html/kernel-boot-parameters-modify/index.html
