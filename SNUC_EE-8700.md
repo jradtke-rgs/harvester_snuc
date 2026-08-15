@@ -1,23 +1,27 @@
 # SNUC_8700
 
+## High-level steps
 Update BIOS
 Set date/time at BIOS
 Boot to USB and modify grub entry ("console=ttyS0,115200n8 nomodest)
 
-# Console Settings
+## Console Settings
 - BIOS
 - grub.cfg
 
-# Installation Choice
+## Installation Choices
 - Virtual Media vs USB Drive
 - PXE (future)
 
-
+## Supported Harvester Versions
 | Harvester Release | Works | Notes |
 |:------------------|:-----:|:------|
 | 1.8.2 | TBD | Kernel 6.x |
 | 1.7.1 | Y | Kernel 6.x |
 | 1.6.x | N | Kernel v5. |
+
+[!NOTE]
+We have tested these versions - your experience may differ.  Contact your account team if you run in to issues.
 
 # known issues:
 - Installer can't proceed past network
