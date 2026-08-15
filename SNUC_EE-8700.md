@@ -20,8 +20,8 @@ Boot to USB and modify grub entry ("console=ttyS0,115200n8 nomodest)
 | 1.7.1 | Y | Kernel 6.x |
 | 1.6.x | N | Kernel v5. |
 
-[!NOTE]
-We have tested these versions - your experience may differ.  Contact your account team if you run in to issues.
+> [!NOTE]
+> We have tested these versions - your experience may differ.  Contact your account team if you run in to issues.
 
 # known issues:
 - Installer can't proceed past network
