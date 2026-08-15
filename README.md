@@ -5,6 +5,7 @@ This repo is a collection of notes regarding the installation of Harvester on SN
 ## Status
 this repo is *literally* just notes at this point (Aug 2026).  I will clean it all up and improve formatting/layout after the testing is complete.
 
+## Systems
 [SNUC EE-8700](./SNUC_EE-8700.md)
 
 
