@@ -24,8 +24,9 @@ Boot to USB and modify grub entry ("console=ttyS0,115200n8 nomodest)
 > We have tested these versions - your experience may differ.  Contact your account team if you run in to issues.
 
 # known issues:
-- Installer can't proceed past network
-- No display on console
+- Installer can't proceed past network.
+ - For some reason the TUI does not display the network page correctly.  This may preclude you from seeing the "MTU value" altogether.  You can attempt to fill in the values you can see in that page and simply hit 'enter' to proceed to the next page.  If that does not work, the version of harvester you are attemping may not work with the hardware version you have.
+- No display on console - if you do not update GRUB at boot time, you likely will not see any console output
 
 
 # References
