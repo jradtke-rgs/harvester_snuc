@@ -6,8 +6,8 @@ Set date/time at BIOS
 Boot to USB and modify grub entry ("console=ttyS0,115200n8 nomodest)
 
 ## Console Settings
-- BIOS
-- grub.cfg
+- BIOS - you need to update the Console settings in the BIOS
+- grub.cfg - you need to pass additional parameters to the boot string for the lack of default graphics head.
 
 ## Installation Choices
 - Virtual Media vs USB Drive
