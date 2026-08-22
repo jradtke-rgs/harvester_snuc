@@ -1,9 +1,9 @@
 # SNUC_8700
 
 ## High-level steps
-Update BIOS
-Set date/time at BIOS
-Boot to USB and modify grub entry ("console=ttyS0,115200n8 nomodest)
+Update BIOS  
+Set date/time at BIOS  
+Boot to USB and modify grub entry ("console=ttyS0,115200n8 nomodest)  
 
 ## Console Settings
 - BIOS - you need to update the Console settings in the BIOS
