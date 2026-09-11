@@ -1,4 +1,4 @@
-# SNUC_8700
+# SNUC_2300
 
 ## High-level steps
 Update BIOS  
@@ -16,9 +16,9 @@ Boot to USB and modify grub entry ("console=ttyS0,115200n8 nomodest)
 ## Supported Harvester Versions
 | Harvester Release | Works | Notes |
 |:------------------|:-----:|:------|
-| 1.8.2 | TBD | Kernel 6.x |
-| 1.7.1 | Y | Kernel 6.x |
-| 1.6.x | N | Kernel v5. |
+| 1.8.2 | Y | Kernel 6.x |
+| 1.7.1 | N (important) | Kernel 6.x |
+| 1.6.x | N (haven't attempted) | Kernel v5. |
 
 > [!NOTE]
 > We have tested these versions - your experience may differ.  Contact your account team if you run in to issues.
