@@ -1,258 +1,121 @@
-**RGS Solutions Architecture --- Technical Note**
+# Headless Harvester Installation Options
 
-Installing RGS Harvester for Government on Headless Systems
+**RGS Solutions Architecture — Technical Note**
 
-*Options for console access and an actionable workaround for
-text-console-only hardware*
+## Installing RGS Harvester for Government on Headless Systems
 
-Purpose
+*Options for console access and an actionable workaround for text-console-only hardware*
 
-This note documents the options for installing RGS Harvester for
-Government on servers with no VGA output --- edge appliances, rack
-servers accessed only through a BMC, or any target where a monitor
-cannot be physically or remotely attached. It also captures a concrete,
-tested workaround for driving the interactive installer over a
-serial/text console, since this is not currently documented upstream.
+## Purpose
 
-This guidance is hardware-agnostic. It applies to any headless target
---- edge compute appliances, rack-mount servers, or cloud/bare-metal
-instances --- not to a specific vendor or model.
+This note documents the options for installing RGS Harvester for Government on servers with no VGA output — edge appliances, rack servers accessed only through a BMC, or any target where a monitor cannot be physically or remotely attached. It also captures a concrete, tested workaround for driving the interactive installer over a serial/text console, since this is not currently documented upstream.
 
-The problem
+This guidance is hardware-agnostic. It applies to any headless target — edge compute appliances, rack-mount servers, or cloud/bare-metal instances — not to a specific vendor or model.
 
-The Harvester installer (harvester-installer) always attaches its
-interactive TUI, and the post-install Dashboard, to whichever console it
-detects as tty1 --- effectively assuming a VGA/graphical console is
-present. On a system with no VGA output, and no BMC feature that
-emulates one, the installer output is invisible: it is running, but
-nothing is displayed anywhere the operator can reach.
+## The problem
 
-This is a known, long-standing limitation (see GitHub Issues, below),
-not a misconfiguration on the operator\'s part. It affects any target
-whose only console is serial (ttyS0/SOL) rather than VGA.
+The Harvester installer (`harvester-installer`) always attaches its interactive TUI, and the post-install Dashboard, to whichever console it detects as `tty1` — effectively assuming a VGA/graphical console is present. On a system with no VGA output, and no BMC feature that emulates one, the installer output is invisible: it is running, but nothing is displayed anywhere the operator can reach.
 
-Options, in order of preference
+This is a known, long-standing limitation (see GitHub Issues, below), not a misconfiguration on the operator's part. It affects any target whose only console is serial (`ttyS0`/SOL) rather than VGA.
 
-Evaluate these in the order below for any given target. Preference is
-driven by how much manual, interactive work is required and how
-repeatable the result is.
+## Options, in order of preference
 
-  -----------------------------------------------------------------------------
-  **Option**    **What it requires**  **Pros**           **Cons**
-  ------------- --------------------- ------------------ ----------------------
-  BMC /         BMC with full video   Installer TUI      Requires confirming
-  KVM-over-IP   (KVM) redirection,    works exactly as   the BMC tier actually
-  virtual       e.g. IPMI, Redfish,   on a monitor; no   includes video/KVM,
-  console       iDRAC, iLO, or a      kernel arg or      not just power control
-                vendor-specific       config changes     and
-                out-of-band           needed; supports   text/serial-over-LAN
-                controller with       virtual media to   
-                graphical console     mount the ISO      
-                support               remotely           
+Evaluate these in the order below for any given target. Preference is driven by how much manual, interactive work is required and how repeatable the result is.
 
-  PXE boot with Network boot          Fully              Requires PXE
-  config.yaml   infrastructure        non-interactive;   infrastructure; less
-                (DHCP/TFTP or iPXE)   no console         useful for a single
-                and a prepared        redirection needed one-off box with no
-                config.yaml           at all; repeatable network boot
-                                      and scriptable for environment
-                                      fleet installs     
+| Option | What it requires | Pros | Cons |
+| --- | --- | --- | --- |
+| **1. BMC / KVM-over-IP virtual console** | BMC with full video (KVM) redirection, e.g. IPMI, Redfish, iDRAC, iLO, or a vendor-specific out-of-band controller with graphical console support | Installer TUI works exactly as on a monitor; no kernel arg or config changes needed; supports virtual media to mount the ISO remotely | Requires confirming the BMC tier actually includes video/KVM, not just power control and text/serial-over-LAN |
+| **2. PXE boot with config.yaml** | Network boot infrastructure (DHCP/TFTP or iPXE) and a prepared `config.yaml` | Fully non-interactive; no console redirection needed at all; repeatable and scriptable for fleet installs | Requires PXE infrastructure; less useful for a single one-off box with no network boot environment |
+| **3. Automatic install via kernel arguments** | Ability to edit boot/kernel parameters (GRUB, iPXE script, or IPMI-set boot options) plus a hosted `config_url` | No PXE server required; works from an ISO or raw disk image; fully unattended | Requires hosting the config file somewhere reachable at boot time; more setup than a simple ISO boot |
+| **4. Serial console workaround** (GRUB `console=` edit) | Physical or BMC-provided serial/text console access (SOL, minicom, or a null-modem connection) | Works on hardware with no VGA output and no KVM-capable BMC; uses only a text console | Manual, interactive, undocumented upstream; sensitive to terminal sizing; not scriptable for repeat installs |
 
-  Automatic     Ability to edit       No PXE server      Requires hosting the
-  install via   boot/kernel           required; works    config file somewhere
-  kernel        parameters (GRUB,     from an ISO or raw reachable at boot
-  arguments     iPXE script, or       disk image; fully  time; more setup than
-                IPMI-set boot         unattended         a simple ISO boot
-                options) plus a                          
-                hosted config_url                        
+### 1. BMC / KVM-over-IP virtual console (preferred when available)
 
-  Serial        Physical or           Works on hardware  Manual, interactive,
-  console       BMC-provided          with no VGA output undocumented upstream;
-  workaround    serial/text console   and no KVM-capable sensitive to terminal
-  (GRUB         access (SOL, minicom, BMC; uses only a   sizing; not scriptable
-  console=      or a null-modem       text console       for repeat installs
-  edit)         connection)                              
-  -----------------------------------------------------------------------------
+If the target's BMC provides true video/KVM redirection (not just power control or text-based serial-over-LAN), this sidesteps the whole problem: the installer renders exactly as it would on an attached monitor, and virtual media can be used to mount the Harvester ISO without physically touching the box.
 
-1\. BMC / KVM-over-IP virtual console (preferred when available)
+Before assuming this is available, confirm with the hardware vendor whether the BMC tier on the specific model includes full KVM video, or only power/health monitoring and a text console. Some vendor BMC feature sets vary by model within the same product line — do not assume KVM support carries across the whole lineup.
 
-If the target\'s BMC provides true video/KVM redirection (not just power
-control or text-based serial-over-LAN), this sidesteps the whole
-problem: the installer renders exactly as it would on an attached
-monitor, and virtual media can be used to mount the Harvester ISO
-without physically touching the box.
+### 2. PXE boot with config.yaml (preferred for repeatable / fleet installs)
 
-Before assuming this is available, confirm with the hardware vendor
-whether the BMC tier on the specific model includes full KVM video, or
-only power/health monitoring and a text console. Some vendor BMC feature
-sets vary by model within the same product line --- do not assume KVM
-support carries across the whole lineup.
+When booting via PXE, the interactive installer is bypassed entirely — Harvester is configured from a supplied `config.yaml` instead. This removes the console problem altogether, since there is no TUI to display. This is the most robust option for customer deployments where the install needs to be repeatable or scripted, and it works regardless of whether the target has any usable console at all.
 
-2\. PXE boot with config.yaml (preferred for repeatable / fleet
-installs)
+Reference: RGS/Harvester PXE boot install documentation for the `config.yaml` schema.
 
-When booting via PXE, the interactive installer is bypassed entirely ---
-Harvester is configured from a supplied config.yaml instead. This
-removes the console problem altogether, since there is no TUI to
-display. This is the most robust option for customer deployments where
-the install needs to be repeatable or scripted, and it works regardless
-of whether the target has any usable console at all.
+### 3. Automatic install via kernel arguments
 
-Reference: RGS/Harvester PXE boot install documentation for the
-config.yaml schema.
+Similar in spirit to PXE, but usable from a plain ISO boot or a raw disk image without standing up PXE infrastructure. Setting `harvester.install.automatic=true` along with `harvester.install.config_url=<url-to-config.yaml>` at the kernel command line drives a fully unattended install. The config file (or the kernel args directly) can also set `install.tty` to point logging at a specific serial device, e.g.:
 
-3\. Automatic install via kernel arguments
+```
+install:
+  tty: ttyS0,115200n8
+```
 
-Similar in spirit to PXE, but usable from a plain ISO boot or a raw disk
-image without standing up PXE infrastructure. Setting
-harvester.install.automatic=true along with
-harvester.install.config_url=\<url-to-config.yaml\> at the kernel
-command line drives a fully unattended install. The config file (or the
-kernel args directly) can also set install.tty to point logging at a
-specific serial device, e.g.:
+This is a good middle ground: no PXE server needed, but still fully unattended and scriptable, which matters for FIPS/STIG-documented, repeatable install procedures.
 
-install: tty: ttyS0,115200n8
+### 4. Serial console workaround (manual, interactive — use only when the above are not available)
 
-This is a good middle ground: no PXE server needed, but still fully
-unattended and scriptable, which matters for FIPS/STIG-documented,
-repeatable install procedures.
+If the target truly has no VGA, no KVM-capable BMC, and no network boot path (e.g. a single appliance being staged by hand), the installer can still be driven manually over a serial console by redirecting it there at boot. This is the workaround captured in GitHub Issue #5637 and is not part of the official Harvester documentation.
 
-4\. Serial console workaround (manual, interactive --- use only when the
-above are not available)
+## Actionable workaround: driving the installer over a serial console
 
-If the target truly has no VGA, no KVM-capable BMC, and no network boot
-path (e.g. a single appliance being staged by hand), the installer can
-still be driven manually over a serial console by redirecting it there
-at boot. This is the workaround captured in GitHub Issue #5637 and is
-not part of the official Harvester documentation.
+Use this procedure when Options 1–3 above are not available for the target hardware.
 
-Actionable workaround: driving the installer over a serial console
+1. Connect to the target's serial console (physical null-modem cable, USB-serial adapter, or the BMC's serial-over-LAN / SOL feature) using a terminal program such as minicom or screen.
+2. Boot the Harvester ISO and interrupt at the GRUB menu (press Esc to stay on the menu when it appears).
+3. Press `e` on the first menu entry to edit it.
+4. Locate the kernel command line and append the console parameter for your serial device and baud rate, for example:
 
-Use this procedure when Options 1--3 above are not available for the
-target hardware.
+   ```
+   console=ttyS0,115200n8
+   ```
 
-1.  Connect to the target\'s serial console (physical null-modem cable,
-    USB-serial adapter, or the BMC\'s serial-over-LAN / SOL feature)
-    using a terminal program such as minicom or screen.
+   Adjust the device name (`ttyS0`, `ttyS4`, etc.) to match the port your BMC or hardware actually exposes — this varies by vendor and, on multi-UART boards, by which header/port is wired to the accessible connector. If an existing `console=tty1` (VGA) entry is already present, you can leave it in place and simply add the serial entry after it; the last `console=` listed becomes the primary `/dev/console`.
 
-2.  Boot the Harvester ISO and interrupt at the GRUB menu (press Esc to
-    stay on the menu when it appears).
+5. Press Ctrl+X (or F10, depending on the GRUB build) to boot with the edited line.
+6. In the serial terminal, maximize the terminal window so it has reasonable dimensions — the installer TUI can panic with an "invalid dimensions" error if the terminal is too small or too short.
+7. Log in with the default credentials (`rancher` / `rancher`), then elevate:
 
-3.  Press e on the first menu entry to edit it.
+   ```
+   sudo su -
+   ```
 
-4.  Locate the kernel command line and append the console parameter for
-    your serial device and baud rate, for example:
+8. Resize the terminal so the TUI renders correctly:
 
-console=ttyS0,115200n8
+   ```
+   setterm --resize
+   ```
 
-Adjust the device name (ttyS0, ttyS4, etc.) to match the port your BMC
-or hardware actually exposes --- this varies by vendor and, on
-multi-UART boards, by which header/port is wired to the accessible
-connector. If an existing console=tty1 (VGA) entry is already present,
-you can leave it in place and simply add the serial entry after it; the
-last console= listed becomes the primary /dev/console.
+9. Manually launch the installer:
 
-1.  Press Ctrl+X (or F10, depending on the GRUB build) to boot with the
-    edited line.
+   ```
+   start-installer.sh
+   ```
 
-2.  In the serial terminal, maximize the terminal window so it has
-    reasonable dimensions --- the installer TUI can panic with an
-    "invalid dimensions" error if the terminal is too small or too
-    short.
+10. Proceed through the interactive installer as normal (disk selection, network configuration, cluster token, etc.).
+11. Once installation completes and the system reboots, remove the installation media (USB/virtual ISO) — otherwise some systems will boot back into the installer rather than the installed disk.
 
-3.  Log in with the default credentials (rancher / rancher), then
-    elevate:
+## Notes and gotchas
 
-sudo su -
+- The `console=` kernel parameter can be repeated, but only once per console technology (e.g. `console=tty0 console=ttyS0` is valid; `console=ttyS0 console=ttyS1` is not). Whichever console is listed last becomes the primary `/dev/console` and receives keyboard input.
+- This workaround is manual and interactive by nature — it is a reasonable fallback for one-off staging of a single appliance, but it is not a substitute for Option 2 or 3 when the install needs to be repeatable, scripted, or documented as part of a FIPS/STIG-compliant build procedure.
+- After installation, the post-install Dashboard is also tied to `tty1` by default per Issue #485 — if ongoing console access to the running node (as opposed to just the installer) is needed, the same `console=` redirection approach should be re-applied to the installed system's boot configuration, not just the installer boot.
 
-1.  Resize the terminal so the TUI renders correctly:
+## Related GitHub issues
 
-setterm \--resize
+These issues (in harvester/harvester) document the underlying limitation and the source of the workaround above.
 
-1.  Manually launch the installer:
+| Issue | Summary | Status / relevance |
+| --- | --- | --- |
+| [harvester/harvester #485](https://github.com/harvester/harvester/issues/485) | Original bug report: the installer and post-install dashboard are always tied to `tty1` (VGA), even on headless servers or cloud instances (Equinix Metal, KVM/virsh) that only expose a serial console. | Root-cause report establishing the underlying limitation. No native fix; behavior persists. |
+| [harvester/harvester #3393](https://github.com/harvester/harvester/issues/3393) | User question: reached the `ttyS0` login prompt (SUSE Linux Enterprise Micro / rancher login) but had no documented way to drive the interactive installer TUI from that console. | Closed as a question, not a bug fix. Confirms the gap is a documentation gap, not just a code limitation. |
+| [harvester/harvester #5637](https://github.com/harvester/harvester/issues/5637) | Documentation request that also contains the community-sourced workaround: edit the GRUB entry to add `console=ttyS<N>,115200`, resize the terminal, then manually run the installer. | Tagged require/doc. This is the source of the actionable workaround below; it has not been merged into the official docs as of this writing. |
 
-start-installer.sh
+## Links
 
-1.  Proceed through the interactive installer as normal (disk selection,
-    network configuration, cluster token, etc.).
+- [Issue #485 — The installer and dashboard are always displayed on tty1](https://github.com/harvester/harvester/issues/485)
+- [Issue #3393 — Can you provide instructions to install harvester without VGA (headless)](https://github.com/harvester/harvester/issues/3393)
+- [Issue #5637 — \[DOC\] Tips to install Harvester with a serial console](https://github.com/harvester/harvester/issues/5637)
 
-2.  Once installation completes and the system reboots, remove the
-    installation media (USB/virtual ISO) --- otherwise some systems will
-    boot back into the installer rather than the installed disk.
+## Recommendation
 
-Notes and gotchas
-
-- The console= kernel parameter can be repeated, but only once per
-  console technology (e.g. console=tty0 console=ttyS0 is valid;
-  console=ttyS0 console=ttyS1 is not). Whichever console is listed last
-  becomes the primary /dev/console and receives keyboard input.
-
-- This workaround is manual and interactive by nature --- it is a
-  reasonable fallback for one-off staging of a single appliance, but it
-  is not a substitute for Option 2 or 3 when the install needs to be
-  repeatable, scripted, or documented as part of a FIPS/STIG-compliant
-  build procedure.
-
-- After installation, the post-install Dashboard is also tied to tty1 by
-  default per Issue #485 --- if ongoing console access to the running
-  node (as opposed to just the installer) is needed, the same console=
-  redirection approach should be re-applied to the installed system\'s
-  boot configuration, not just the installer boot.
-
-Related GitHub issues
-
-These issues (in harvester/harvester) document the underlying limitation
-and the source of the workaround above.
-
-  ----------------------------------------------------------------------------------
-  **Issue**             **Summary**                     **Status / relevance**
-  --------------------- ------------------------------- ----------------------------
-  harvester/harvester   Original bug report: the        Root-cause report
-  #485                  installer and post-install      establishing the underlying
-                        dashboard are always tied to    limitation. No native fix;
-                        tty1 (VGA), even on headless    behavior persists.
-                        servers or cloud instances      
-                        (Equinix Metal, KVM/virsh) that 
-                        only expose a serial console.   
-
-  harvester/harvester   User question: reached the      Closed as a question, not a
-  #3393                 ttyS0 login prompt (SUSE Linux  bug fix. Confirms the gap is
-                        Enterprise Micro / rancher      a documentation gap, not
-                        login) but had no documented    just a code limitation.
-                        way to drive the interactive    
-                        installer TUI from that         
-                        console.                        
-
-  harvester/harvester   Documentation request that also Tagged require/doc. This is
-  #5637                 contains the community-sourced  the source of the actionable
-                        workaround: edit the GRUB entry workaround below; it has not
-                        to add                          been merged into the
-                        console=ttyS\<N\>,115200,       official docs as of this
-                        resize the terminal, then       writing.
-                        manually run the installer.     
-  ----------------------------------------------------------------------------------
-
-Links
-
-• [Issue #485 --- The installer and dashboard are always displayed on
-tty1](https://github.com/harvester/harvester/issues/485)
-
-• [Issue #3393 --- Can you provide instructions to install harvester
-without VGA
-(headless)](https://github.com/harvester/harvester/issues/3393)
-
-• [Issue #5637 --- \[DOC\] Tips to install Harvester with a serial
-console](https://github.com/harvester/harvester/issues/5637)
-
-Recommendation
-
-For customer engagements, lead with Option 1 (BMC/KVM virtual console)
-if the hardware vendor confirms it\'s available, since it requires no
-deviation from the standard ISO-boot procedure. For any deployment
-intended to be repeatable, documented, or delivered as part of a runbook
---- which is the common case for RGS federal/DoD customer engagements
---- prefer Option 2 or 3 (PXE or automatic install with config.yaml)
-regardless of whether a console is available at all, since they remove
-the interactive installer from the picture entirely. Reserve the serial
-console workaround (Option 4) for one-off staging where no BMC video and
-no network boot path exist.
+For customer engagements, lead with Option 1 (BMC/KVM virtual console) if the hardware vendor confirms it's available, since it requires no deviation from the standard ISO-boot procedure. For any deployment intended to be repeatable, documented, or delivered as part of a runbook — which is the common case for RGS federal/DoD customer engagements — prefer Option 2 or 3 (PXE or automatic install with config.yaml) regardless of whether a console is available at all, since they remove the interactive installer from the picture entirely. Reserve the serial console workaround (Option 4) for one-off staging where no BMC video and no network boot path exist.
