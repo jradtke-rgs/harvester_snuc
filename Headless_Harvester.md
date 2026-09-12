@@ -8,4 +8,3 @@ There are a handful of relevant GitHub issues in the harvester/harvester repo, a
 
 Bottom line: there's no built-in "headless mode" flag for the ISO-based interactive installer — the community workaround is the manual GRUB console=ttyS<N> edit + setterm --resize + start-installer.sh dance from #5637, and it's not officially documented. That's exactly why I'd steer you toward the PXE + config.yaml or iPXE automatic install path for the actual customer engagement (per install.tty in the config, or harvester.install.tty= kernel arg) — those bypass the interactive TUI entirely and don't depend on this still-open documentation gap.
 
-Want me to draft an internal RGS troubleshooting note capturing this (GRUB edit workaround + links to #485/#3393/#5637) in case other SAs on your team hit the same SNUC EE-8700 or similar headless edge box?
